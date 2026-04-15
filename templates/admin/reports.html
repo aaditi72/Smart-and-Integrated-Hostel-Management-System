@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartHostel — Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple-600:#9333ea;
+      --green-50:#f0fdf4;--green-100:#dcfce7;--green-600:#16a34a;
+      --blue-50:#eff6ff;--blue-100:#dbeafe;--blue-600:#2563eb;
+      --orange-50:#fff7ed;--orange-600:#ea580c;
+      --red-50:#fef2f2;--red-100:#fee2e2;--red-600:#dc2626;
+      --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;
+      --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;
+      --gray-700:#334155;--gray-800:#1e293b;--gray-900:#0f172a;
+      --radius:0.625rem;--shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+    }
+    body { font-family:'Inter',system-ui,sans-serif; background:var(--gray-50); color:var(--gray-800); font-size:14px; min-height:100vh; }
+    .header { position:sticky;top:0;z-index:10;background:white;border-bottom:1px solid var(--gray-200);padding:0 1.5rem; }
+    .header-inner { max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px; }
+    .brand { display:flex;align-items:center;gap:.625rem; }
+    .brand-name { font-size:1.25rem;font-weight:700;color:var(--gray-900); }
+    .brand-sub  { font-size:.72rem;color:var(--gray-500); }
+    .brand-icon { color:var(--purple-600);width:28px;height:28px; }
+    .nav-links { display:flex;gap:.5rem; }
+    .nav-link { padding:.45rem .875rem;border:1px solid var(--gray-200);border-radius:var(--radius);background:white;color:var(--gray-600);font-size:.8rem;font-weight:500;text-decoration:none;transition:all .15s; }
+    .nav-link:hover { background:var(--gray-50); }
+    .nav-link.active { background:var(--gray-900);color:white;border-color:var(--gray-900); }
+    .main { max-width:1100px;margin:0 auto;padding:1.75rem 1.5rem; }
+    .page-title { font-size:1.4rem;font-weight:700;color:var(--gray-900); }
+    .page-sub { font-size:.875rem;color:var(--gray-500);margin-top:.25rem;margin-bottom:1.5rem; }
+    .stats-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:1rem; }
+    @media(min-width:768px) { .stats-grid { grid-template-columns:repeat(4,1fr); } }
+    .stat-card { border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow-sm); }
+    .stat-card.blue  { background:var(--blue-50);border:1px solid var(--blue-100); }
+    .stat-card.green { background:var(--green-50);border:1px solid var(--green-100); }
+    .stat-card.orange { background:var(--orange-50);border:1px solid #fed7aa; }
+    .stat-card.red   { background:var(--red-50);border:1px solid var(--red-100); }
+    .stat-label { font-size:.78rem;font-weight:500;color:var(--gray-600);margin-bottom:.5rem; }
+    .stat-value { font-size:2rem;font-weight:700;line-height:1; }
+    .stat-card.blue  .stat-value { color:var(--blue-600); }
+    .stat-card.green .stat-value { color:var(--green-600); }
+    .stat-card.orange .stat-value { color:var(--orange-600); }
+    .stat-card.red   .stat-value { color:var(--red-600); }
+    .stat-sub { font-size:.72rem;color:var(--gray-400);margin-top:.375rem; }
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div><div class="brand-name">SmartHostel</div><div class="brand-sub">Admin Portal</div></div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+      <a class="nav-link" href="{{ url_for('admin_rooms') }}">Rooms</a>
+      <a class="nav-link" href="{{ url_for('admin_students') }}">Students</a>
+      <a class="nav-link active" href="{{ url_for('admin_reports') }}">Reports</a>
+      <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+</header>
+<main class="main">
+  <h2 class="page-title">System Reports</h2>
+  <p class="page-sub">Live overview of hostel operations</p>
+
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">Total Students</div>
+      <div class="stat-value">{{ total_students }}</div>
+      <div class="stat-sub">Registered in system</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Rooms Occupied</div>
+      <div class="stat-value">{{ occupied_rooms }}</div>
+      <div class="stat-sub">Out of total rooms</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Pending Complaints</div>
+      <div class="stat-value">{{ pending_complaints }}</div>
+      <div class="stat-sub">Awaiting resolution</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Pending Fees</div>
+      <div class="stat-value">{{ pending_fees }}</div>
+      <div class="stat-sub">Payments outstanding</div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

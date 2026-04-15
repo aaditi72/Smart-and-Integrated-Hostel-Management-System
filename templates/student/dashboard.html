@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartHostel — Student Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue-50: #eff6ff; --blue-100: #dbeafe; --blue-600: #2563eb; --blue-700: #1d4ed8;
+      --green-50: #f0fdf4; --green-100: #dcfce7; --green-600: #16a34a; --green-700: #15803d;
+      --orange-600: #ea580c;
+      --yellow-50: #fefce8; --yellow-100: #fef9c3; --yellow-700: #a16207;
+      --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1; --gray-400: #94a3b8; --gray-500: #64748b;
+      --gray-600: #475569; --gray-700: #334155; --gray-800: #1e293b; --gray-900: #0f172a;
+      --radius: 0.625rem;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--gray-50); color: var(--gray-800); font-size: 14px; min-height: 100vh; }
+
+    /* ── HEADER ── */
+    .header {
+      position: sticky; top: 0; z-index: 10;
+      background: white; border-bottom: 1px solid var(--gray-200);
+      padding: 0 1.5rem;
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .header-brand { display: flex; align-items: center; gap: 0.625rem; }
+    .brand-icon { color: var(--blue-600); width: 28px; height: 28px; }
+    .brand-name { font-size: 1.25rem; font-weight: 700; color: var(--gray-900); letter-spacing: -0.3px; }
+    .brand-sub { font-size: 0.72rem; color: var(--gray-500); margin-top: 1px; }
+
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .user-info { text-align: right; }
+    .user-name { font-size: 0.875rem; font-weight: 500; color: var(--gray-900); }
+    .user-id { font-size: 0.72rem; color: var(--gray-500); }
+
+    .btn-logout {
+      display: flex; align-items: center; gap: 0.375rem;
+      padding: 0.45rem 0.875rem;
+      border: 1px solid var(--gray-200); border-radius: var(--radius);
+      background: white; color: var(--gray-600); font-size: 0.8rem; font-weight: 500;
+      font-family: inherit; cursor: pointer; text-decoration: none;
+      transition: all 0.15s;
+    }
+    .btn-logout:hover { background: var(--gray-50); border-color: var(--gray-300); }
+    .btn-logout svg { width: 14px; height: 14px; }
+
+    /* ── MAIN ── */
+    .main { max-width: 1200px; margin: 0 auto; padding: 1.75rem 1.5rem; }
+
+    .page-title { font-size: 1.6rem; font-weight: 700; color: var(--gray-900); letter-spacing: -0.4px; }
+    .page-sub { font-size: 0.875rem; color: var(--gray-500); margin-top: 0.25rem; margin-bottom: 1.5rem; }
+
+    /* ── STAT CARDS ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .stat-card {
+      background: white; border: 1px solid var(--gray-200);
+      border-radius: var(--radius); padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .stat-card-label { font-size: 0.8rem; font-weight: 500; color: var(--gray-500); }
+    .stat-card-icon { width: 16px; height: 16px; color: var(--gray-400); }
+    .stat-card-value { font-size: 1.5rem; font-weight: 700; color: var(--gray-900); line-height: 1; }
+    .stat-card-sub { font-size: 0.72rem; color: var(--gray-400); margin-top: 0.25rem; }
+    .stat-orange { color: var(--orange-600) !important; }
+
+    /* ── CONTENT GRID ── */
+    .content-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 1024px) { .content-grid { grid-template-columns: 1fr 1fr; } }
+    .col-full { grid-column: 1 / -1; }
+
+    /* ── CARD ── */
+    .card {
+      background: white; border: 1px solid var(--gray-200);
+      border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .card-header { padding: 1.25rem 1.25rem 0; }
+    .card-title { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 600; color: var(--gray-900); }
+    .card-title svg { width: 17px; height: 17px; color: var(--gray-600); }
+    .card-desc { font-size: 0.78rem; color: var(--gray-400); margin-top: 0.2rem; }
+    .card-body { padding: 1rem 1.25rem 1.25rem; }
+
+    /* Roommates */
+    .roommate-item {
+      display: flex; align-items: center; gap: 0.625rem;
+      padding: 0.5rem 0.75rem; background: var(--gray-50);
+      border-radius: var(--radius-sm); margin-bottom: 0.5rem;
+    }
+    .roommate-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--blue-100); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .roommate-avatar svg { width: 16px; height: 16px; color: var(--blue-600); }
+    .roommate-name { font-size: 0.85rem; }
+
+    /* Btn outline */
+    .btn-outline {
+      display: flex; align-items: center; gap: 0.375rem; justify-content: center;
+      width: 100%; padding: 0.55rem;
+      border: 1px solid var(--gray-200); border-radius: var(--radius);
+      background: white; color: var(--gray-700); font-size: 0.85rem; font-weight: 500;
+      font-family: inherit; cursor: pointer; margin-top: 0.75rem;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .btn-outline:hover { background: var(--gray-50); border-color: var(--gray-300); }
+    .btn-outline svg { width: 15px; height: 15px; }
+
+    /* Badge */
+    .badge {
+      display: inline-block; padding: 0.2rem 0.6rem;
+      border-radius: 100px; font-size: 0.72rem; font-weight: 500;
+    }
+    .badge-green { background: var(--green-100); color: var(--green-700); }
+    .badge-yellow { background: var(--yellow-100); color: var(--yellow-700); }
+
+    /* Complaints list */
+    .complaint-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem; background: var(--gray-50);
+      border-radius: var(--radius); margin-bottom: 0.5rem;
+    }
+    .complaint-title { font-size: 0.85rem; font-weight: 500; color: var(--gray-800); }
+    .complaint-date { font-size: 0.72rem; color: var(--gray-400); margin-top: 2px; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    thead tr { border-bottom: 1px solid var(--gray-200); }
+    th { text-align: left; padding: 0.75rem 1rem; font-size: 0.8rem; font-weight: 500; color: var(--gray-500); }
+    td { padding: 0.75rem 1rem; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); }
+    tbody tr:hover td { background: var(--gray-50); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+    }
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .nav-link:hover {
+      background: #e2e8f0;
+    }
+    
+    .nav-link.active {
+      background: #0f172a;
+      color: white;
+      border-color: #0f172a;
+    }
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 45px;
+  left: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  min-width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #334155;
+}
+
+.dropdown-content a:hover {
+  background: #f1f5f9;
+}
+
+.show {
+  display: block;
+}
+
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div>
+        <div class="brand-name">SmartHostel</div>
+        <div class="brand-sub">Student Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-links">
+
+  <a class="nav-link {{ 'active' if request.path == '/student/dashboard' else '' }}" href="{{ url_for('student_dashboard') }}">
+    Dashboard
+  </a>
+
+  <!-- DROPDOWN -->
+  <div class="dropdown">
+  <button type="button" class="nav-link dropdown-btn" onclick="toggleMenu()">
+    Menu ▾
+  </button>
+
+  <div id="dropdownMenu" class="dropdown-content">
+    <a href="{{ url_for('student_room_booking') }}">Room Booking</a>
+    <a href="{{ url_for('student_attendance') }}">Attendance</a>
+    <a href="{{ url_for('student_complaints') }}">Complaints</a>
+    <a href="{{ url_for('student_fees') }}">Fees</a>
+    <a href="{{ url_for('student_food_order') }}">Food</a>
+    <a href="{{ url_for('student_announcements') }}">Announcements</a>
+  </div>
+</div>
+
+<script>
+function toggleMenu() {
+  console.log("clicked"); // debug line
+  document.getElementById("dropdownMenu").classList.toggle("show");
+}
+
+window.onclick = function(event) {
+  if (!event.target.closest('.dropdown')) {
+    let dropdown = document.getElementById("dropdownMenu");
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+    }
+  }
+}
+</script>
+
+
+    <div class="header-right">
+      <div class="user-info">
+        <div class="user-name">{{ student.name }}</div>
+        <div class="user-id">{{ student.roll_no }}</div>
+      </div>
+      <a class="btn-logout" href="/logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <h2 class="page-title">Welcome Back, {{ student.name }}!</h2>
+  <p class="page-sub">Here's your hostel information and updates</p>
+
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Room Number</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="stat-card-value">{{ room.room_number if room else 'N/A' }}</div>
+      <div class="stat-card-sub">{{ room.block if room else 'Not allocated' }}, 2nd Floor</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Payment Status</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div class="stat-card-value" style="font-size:1.1rem; padding-top:4px;">
+        <span class="badge badge-green">{{ fee.payment_status if fee else 'Paid' }}</span>
+      </div>
+      <div class="stat-card-sub">{{ fee.amount | default('₹15,000') }} — Jan 2026</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Next Due Date</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="stat-card-value stat-orange">Feb 15, 2026</div>
+      <div class="stat-card-sub">Amount: ₹15,000</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Active Complaints</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="stat-card-value">{{ complaints | length }}</div>
+      <div class="stat-card-sub">1 in progress, 1 resolved</div>
+    </div>
+  </div>
+
+  <!-- CONTENT GRID -->
+  <div class="content-grid">
+
+    <!-- Room Details -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Room Details
+        </div>
+        <div class="card-desc">Your current room and roommates</div>
+      </div>
+      <div class="card-body">
+        <p style="font-size:0.78rem;font-weight:500;color:var(--gray-500);margin-bottom:0.5rem;">Roommates</p>
+        <div class="roommate-item">
+          <div class="roommate-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <span class="roommate-name">John Doe</span>
+        </div>
+        <div class="roommate-item">
+          <div class="roommate-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <span class="roommate-name">Mike Smith</span>
+        </div>
+        <a href="/student/complaints" class="btn-outline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Raise a Complaint
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Complaints -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Recent Complaints
+        </div>
+        <div class="card-desc">Track your complaint status</div>
+      </div>
+      <div class="card-body">
+        {% if complaints %}
+          {% for c in complaints %}
+          <div class="complaint-item">
+            <div>
+              <div class="complaint-title">{{ c.title }}</div>
+              <div class="complaint-date">{{ c.created_at if c.created_at else 'Feb 10, 2026' }}</div>
+            </div>
+            <span class="badge {{ 'badge-green' if c.status == 'Resolved' else 'badge-yellow' }}">{{ c.status }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="complaint-item">
+            <div><div class="complaint-title">AC Not Working</div><div class="complaint-date">Feb 10, 2026</div></div>
+            <span class="badge badge-yellow">In Progress</span>
+          </div>
+          <div class="complaint-item">
+            <div><div class="complaint-title">Water Leakage</div><div class="complaint-date">Feb 8, 2026</div></div>
+            <span class="badge badge-green">Resolved</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Mess Menu -->
+    <div class="card col-full">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+          This Week's Mess Menu
+        </div>
+        <div class="card-desc">View the weekly mess schedule</div>
+      </div>
+      <div class="card-body" style="padding-top:0.25rem;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Breakfast</th>
+                <th>Lunch</th>
+                <th>Dinner</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="font-weight:500;">Monday</td><td>Idli, Sambar, Chutney</td><td>Rice, Dal, Chapati, Veg Curry</td><td>Fried Rice, Manchurian</td></tr>
+              <tr><td style="font-weight:500;">Tuesday</td><td>Poha, Tea</td><td>Rice, Sambar, Chapati, Paneer</td><td>Dal, Rice, Roti</td></tr>
+              <tr><td style="font-weight:500;">Wednesday</td><td>Upma, Coffee</td><td>Rice, Rasam, Chapati, Mix Veg</td><td>Biriyani, Raita</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+</body>
+</html>

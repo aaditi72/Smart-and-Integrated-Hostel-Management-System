@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartHostel — Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple-600:#9333ea;--purple-700:#7e22ce;
+      --green-100:#dcfce7;--green-600:#16a34a;--green-700:#15803d;
+      --blue-50:#eff6ff;--blue-100:#dbeafe;--blue-600:#2563eb;
+      --orange-600:#ea580c;
+      --yellow-100:#fef9c3;--yellow-700:#a16207;
+      --red-100:#fee2e2;--red-600:#dc2626;
+      --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;
+      --gray-300:#cbd5e1;--gray-400:#94a3b8;--gray-500:#64748b;
+      --gray-600:#475569;--gray-700:#334155;--gray-800:#1e293b;--gray-900:#0f172a;
+      --radius:0.625rem;--shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+    }
+    body { font-family:'Inter',system-ui,sans-serif; background:var(--gray-50); color:var(--gray-800); font-size:14px; min-height:100vh; }
+    .header { position:sticky;top:0;z-index:10;background:white;border-bottom:1px solid var(--gray-200);padding:0 1.5rem; }
+    .header-inner { max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px; }
+    .header-brand { display:flex;align-items:center;gap:.625rem; }
+    .brand-icon { color:var(--purple-600);width:28px;height:28px; }
+    .brand-name { font-size:1.25rem;font-weight:700;color:var(--gray-900); }
+    .brand-sub { font-size:.72rem;color:var(--gray-500); }
+    .header-right { display:flex;align-items:center;gap:.75rem; }
+    .nav-links { display:flex;gap:.5rem; }
+    .nav-link { padding:.45rem .875rem;border:1px solid var(--gray-200);border-radius:var(--radius);background:white;color:var(--gray-600);font-size:.8rem;font-weight:500;text-decoration:none;transition:all .15s; }
+    .nav-link:hover { background:var(--gray-50); }
+    .nav-link.active { background:var(--gray-900);color:white;border-color:var(--gray-900); }
+    .btn-logout { display:flex;align-items:center;gap:.375rem;padding:.45rem .875rem;border:1px solid var(--gray-200);border-radius:var(--radius);background:white;color:var(--gray-600);font-size:.8rem;font-weight:500;text-decoration:none;transition:all .15s; }
+    .btn-logout svg { width:14px;height:14px; }
+    .main { max-width:1200px;margin:0 auto;padding:1.75rem 1.5rem; }
+    .page-title { font-size:1.6rem;font-weight:700;color:var(--gray-900); }
+    .page-sub { font-size:.875rem;color:var(--gray-500);margin-top:.25rem;margin-bottom:1.5rem; }
+    .stats-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.5rem; }
+    @media(min-width:768px) { .stats-grid { grid-template-columns:repeat(4,1fr); } }
+    .stat-card { background:white;border:1px solid var(--gray-200);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm); }
+    .stat-card-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem; }
+    .stat-card-label { font-size:.78rem;font-weight:500;color:var(--gray-500); }
+    .stat-card-icon { width:16px;height:16px;color:var(--gray-400); }
+    .stat-card-value { font-size:1.5rem;font-weight:700;color:var(--gray-900);line-height:1; }
+    .stat-card-sub { font-size:.72rem;color:var(--gray-400);margin-top:.25rem; }
+    .stat-green { color:var(--green-600)!important; }
+    .stat-orange { color:var(--orange-600)!important; }
+    .stat-red { color:var(--red-600)!important; }
+    .tab-list { display:flex;border-bottom:1px solid var(--gray-200);margin-bottom:1.25rem;overflow-x:auto; }
+    .tab-btn { padding:.625rem 1rem;font-size:.875rem;font-weight:500;color:var(--gray-500);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:-1px;white-space:nowrap; }
+    .tab-btn.active { color:var(--gray-900);border-bottom-color:var(--gray-900); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .card { background:white;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:1rem; }
+    .card-header { padding:1.25rem 1.25rem 0; }
+    .card-title { display:flex;align-items:center;gap:.5rem;font-size:.95rem;font-weight:600;color:var(--gray-900); }
+    .card-title svg { width:17px;height:17px;color:var(--gray-600); }
+    .card-desc { font-size:.78rem;color:var(--gray-400);margin-top:.2rem; }
+    .card-body { padding:1rem 1.25rem 1.25rem; }
+    .two-col { display:grid;grid-template-columns:1fr;gap:1rem; }
+    @media(min-width:1024px) { .two-col { grid-template-columns:1fr 1fr; } }
+    .badge { display:inline-block;padding:.2rem .6rem;border-radius:100px;font-size:.72rem;font-weight:500; }
+    .badge-green { background:var(--green-100);color:var(--green-700); }
+    .badge-yellow { background:var(--yellow-100);color:var(--yellow-700); }
+    .badge-red { background:var(--red-100);color:var(--red-600); }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%;border-collapse:collapse;font-size:.85rem; }
+    th { text-align:left;padding:.75rem 1rem;font-size:.78rem;font-weight:500;color:var(--gray-500);border-bottom:1px solid var(--gray-200); }
+    td { padding:.75rem 1rem;color:var(--gray-700);border-bottom:1px solid var(--gray-100); }
+    tbody tr:hover td { background:var(--gray-50); }
+    tbody tr:last-child td { border-bottom:none; }
+    .btn-sm { padding:.3rem .75rem;font-size:.78rem;font-weight:500;font-family:inherit;border:1px solid var(--gray-200);border-radius:var(--radius);background:white;color:var(--gray-700);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block; }
+    .btn-sm:hover { background:var(--gray-50); }
+    .btn-success { background:var(--green-600);color:white;border-color:var(--green-600); }
+    .btn-success:hover { background:var(--green-700); }
+    .chart-wrap { position:relative;height:220px; }
+    .finance-row { display:flex;align-items:center;justify-content:space-between;padding:.625rem 0;border-bottom:1px solid var(--gray-100); }
+    .finance-row:last-child { border-bottom:none; }
+    .text-green { color:var(--green-600); }
+    .text-red { color:var(--red-600); }
+    .setting-item { display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--gray-50);border-radius:var(--radius);margin-bottom:.5rem; }
+    .setting-value { font-size:1.05rem;font-weight:700;color:var(--gray-900); }
+    .action-form { display:inline; }
+    .alert { padding:.75rem 1rem;border-radius:var(--radius);font-size:.875rem;margin-bottom:1rem; }
+    .alert-success { background:var(--green-100);color:var(--green-700); }
+    .empty-state { text-align:center;padding:2rem;color:var(--gray-400); }
+    .reg-item { display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--gray-50);border-radius:var(--radius);margin-bottom:.5rem; }
+    .reg-name { font-size:.875rem;font-weight:500; }
+    .reg-meta { font-size:.72rem;color:var(--gray-400); }
+    <h3>Block-wise Occupancy</h3>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Block</th>
+        <th>Total Rooms</th>
+        <th>Occupied</th>
+        <th>Occupancy Rate</th>
+    </tr>
+
+    {% for b in block_occupancy %}
+    <tr>
+        <td>{{ b.block }}</td>
+        <td>{{ b.total }}</td>
+        <td>{{ b.occupied }}</td>
+        <td>{{ b.rate }}%</td>
+    </tr>
+    {% endfor %}
+</table>
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div>
+        <div class="brand-name">SmartHostel</div>
+        <div class="brand-sub">Admin Portal</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="nav-links">
+        <a class="nav-link active" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+        <a class="nav-link" href="{{ url_for('admin_rooms') }}">Rooms</a>
+        <a class="nav-link" href="{{ url_for('admin_students') }}">Students</a>
+        <a class="nav-link" href="{{ url_for('admin_complaints') }}">Complaints</a>
+        <a class="nav-link" href="{{ url_for('admin_reports') }}">Reports</a>
+      </div>
+      <a class="btn-logout" href="/logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <h2 class="page-title">Admin Dashboard</h2>
+  <p class="page-sub">Complete overview of hostel management system</p>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Total Users</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      </div>
+      <div class="stat-card-value">{{ total_users }}</div>
+      <div class="stat-card-sub">{{ total_students }} students registered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Occupancy Rate</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </div>
+      <div class="stat-card-value stat-green">{{ occupancy_rate }}%</div>
+      <div class="stat-card-sub">{{ occupied_rooms }}/{{ total_rooms }} rooms occupied</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Pending Payments</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div class="stat-card-value stat-orange">{{ pending_payments }}</div>
+      <div class="stat-card-sub">Action required</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Escalated Complaints</span>
+        <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="stat-card-value stat-red">{{ escalated_complaints }}</div>
+      <div class="stat-card-sub">Needs admin action</div>
+    </div>
+  </div>
+
+  <div class="tab-list">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('complaints',this)">Escalated Complaints</button>
+    <button class="tab-btn" onclick="showTab('users',this)">Warden Management</button>
+    <button class="tab-btn" onclick="showTab('finance',this)">Finance</button>
+    <button class="tab-btn" onclick="showTab('settings',this)">System Settings</button>
+  </div>
+
+  <!-- Overview -->
+  <div class="tab-panel active" id="tab-overview">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Room Status</div>
+          <div class="card-desc">Occupied vs Available rooms</div>
+        </div>
+        <div class="card-body"><div class="chart-wrap"><canvas id="roomChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Complaint Overview</div>
+          <div class="card-desc">System-wide complaint breakdown</div>
+        </div>
+        <div class="card-body"><div class="chart-wrap"><canvas id="complaintChart"></canvas></div></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Recent Registrations</div>
+          <div class="card-desc">New user accounts</div>
+        </div>
+        <div class="card-body">
+          <div class="reg-item"><div><div class="reg-name">Anjali Verma</div><div class="reg-meta">STU156 • Mar 12, 2026</div></div><span class="badge badge-green">Approved</span></div>
+          <div class="reg-item"><div><div class="reg-name">Rohan Singh</div><div class="reg-meta">STU155 • Mar 11, 2026</div></div><span class="badge badge-green">Approved</span></div>
+          <div class="reg-item"><div><div class="reg-name">Kavya Nair</div><div class="reg-meta">STU154 • Mar 10, 2026</div></div><span class="badge badge-yellow">Pending</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Financial Summary</div>
+          <div class="card-desc">Revenue vs Expenses (last 4 months)</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="financeChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Escalated Complaints (US8 - Admin Complaint Resolution) -->
+  <div class="tab-panel" id="tab-complaints">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Escalated Complaints</div>
+        <div class="card-desc">Complaints escalated by wardens that require admin resolution (US8)</div>
+      </div>
+      <div class="card-body" style="padding-top:.25rem">
+        {% if escalated_list %}
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Student</th><th>Title</th><th>Description</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              {% for c in escalated_list %}
+              <tr>
+                <td style="color:var(--gray-400);font-size:.75rem">#{{ c.complaint_id }}</td>
+                <td style="font-weight:500">{{ c.student_name }}</td>
+                <td>{{ c.title }}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.description }}</td>
+                <td>{{ c.created_at.strftime('%b %d, %Y') if c.created_at else '—' }}</td>
+                <td>
+                  {% if c.status == 'Resolved' %}<span class="badge badge-green">Resolved</span>
+                  {% elif c.status == 'Escalated' %}<span class="badge badge-red">Escalated</span>
+                  {% else %}<span class="badge badge-yellow">{{ c.status }}</span>{% endif %}
+                </td>
+                <td>
+                  {% if c.status != 'Resolved' %}
+                  <form class="action-form" method="POST" action="{{ url_for('admin_complaints') }}">
+                    <input type="hidden" name="complaint_id" value="{{ c.complaint_id }}">
+                    <input type="hidden" name="action" value="resolve">
+                    <button type="submit" class="btn-sm btn-success">Resolve</button>
+                  </form>
+                  {% else %}
+                  <span style="color:var(--gray-400);font-size:.78rem">Done</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">No escalated complaints. All clear! ✓</div>
+        {% endif %}
+        <div style="margin-top:1rem;text-align:right"><a class="btn-sm" href="{{ url_for('admin_complaints') }}">View All Complaints →</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users -->
+  <div class="tab-panel" id="tab-users">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Warden Management</div>
+        <div class="card-desc">Manage hostel wardens and their assignments</div>
+      </div>
+      <div class="card-body" style="padding-top:.25rem">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Designation</th><th>Status</th></tr></thead>
+            <tbody>
+              {% for w in wardens %}
+              <tr>
+                <td style="color:var(--gray-500)">WAR00{{ loop.index }}</td>
+                <td style="font-weight:500">{{ w.name }}</td>
+                <td>{{ w.username }}</td>
+                <td>{{ w.designation or 'Hostel Warden' }}</td>
+                <td><span class="badge badge-green">Active</span></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:2rem">No wardens registered yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finance -->
+  <div class="tab-panel" id="tab-finance">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/></svg>Pending Payments</div>
+        <div class="card-desc">Students with outstanding payments</div>
+      </div>
+      <div class="card-body" style="padding-top:.25rem">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student ID</th><th>Name</th><th>Room</th><th>Amount</th><th>Due Date</th><th>Overdue</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td style="color:var(--gray-500)">STU045</td><td>Amit Sharma</td><td>A-305</td><td style="font-weight:500">₹15,000</td><td>Mar 10, 2026</td><td style="color:#b91c1c;font-weight:500">2 days</td><td><button class="btn-sm">Send Reminder</button></td></tr>
+              <tr><td style="color:var(--gray-500)">STU078</td><td>Neha Gupta</td><td>B-201</td><td style="font-weight:500">₹15,000</td><td>Mar 15, 2026</td><td style="color:var(--green-600)">On time</td><td><button class="btn-sm">Send Reminder</button></td></tr>
+              <tr><td style="color:var(--gray-500)">STU092</td><td>Vikram Rao</td><td>C-405</td><td style="font-weight:500">₹15,000</td><td>Mar 8, 2026</td><td style="color:#b91c1c;font-weight:500">4 days</td><td><button class="btn-sm">Send Reminder</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>System Configuration</div>
+        <div class="card-desc">Manage hostel fees and charges</div>
+      </div>
+      <div class="card-body">
+        <div class="setting-item"><div><p style="font-size:.875rem;font-weight:500">Room Rent (Monthly)</p></div><div style="display:flex;gap:.75rem;align-items:center"><span class="setting-value">₹15,000</span><button class="btn-sm">Edit</button></div></div>
+        <div class="setting-item"><div><p style="font-size:.875rem;font-weight:500">Mess Fee (Monthly)</p></div><div style="display:flex;gap:.75rem;align-items:center"><span class="setting-value">₹4,500</span><button class="btn-sm">Edit</button></div></div>
+        <div class="setting-item"><div><p style="font-size:.875rem;font-weight:500">Late Payment Fine</p></div><div style="display:flex;gap:.75rem;align-items:center"><span class="setting-value">₹500/day</span><button class="btn-sm">Edit</button></div></div>
+        <div class="setting-item"><div><p style="font-size:.875rem;font-weight:500">Security Deposit</p></div><div style="display:flex;gap:.75rem;align-items:center"><span class="setting-value">₹20,000</span><button class="btn-sm">Edit</button></div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Room doughnut
+  new Chart(document.getElementById('roomChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Occupied', 'Available'],
+      datasets: [{ data: [{{ occupied_rooms }}, {{ available_rooms }}], backgroundColor: ['#9333ea','#16a34a'], borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { position:'bottom', labels: { font:{size:12}, padding:12 } } }, cutout:'65%' }
+  });
+
+  // Complaint bar
+  new Chart(document.getElementById('complaintChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Pending','Resolved','Escalated'],
+      datasets: [{ data: [{{ pending_complaints }}, {{ resolved_complaints }}, {{ escalated_complaints }}], backgroundColor: ['#f59e0b','#16a34a','#dc2626'], borderRadius:6, borderSkipped:false }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f1f5f9'}}, x:{grid:{display:false}} } }
+  });
+
+  // Finance line chart
+  new Chart(document.getElementById('financeChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: ['Dec','Jan','Feb','Mar'],
+      datasets: [
+        { label:'Revenue (L)', data:[22.8,23.4,24.1,23.9], borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,0.08)', tension:0.4, fill:true, pointBackgroundColor:'#16a34a', pointRadius:4 },
+        { label:'Expenses (L)', data:[9.4,9.8,10.1,9.6], borderColor:'#dc2626', backgroundColor:'rgba(220,38,38,0.06)', tension:0.4, fill:true, pointBackgroundColor:'#dc2626', pointRadius:4 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{font:{size:12},padding:12} } }, scales:{ y:{beginAtZero:false,grid:{color:'#f1f5f9'}}, x:{grid:{display:false}} } }
+  });
+</script>
+</body>
+</html>
