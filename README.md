@@ -1,4 +1,4 @@
-<img width="1919" height="912" alt="Screenshot 2026-03-22 200951" src="https://github.com/user-attachments/assets/b31e03d1-5f8d-4ac5-8315-90c9fb70bd06" /># 🏠 Smart & Integrated Hostel Management System
+# 🏠 Smart & Integrated Hostel Management System
 
 ## 📌 Overview
 
